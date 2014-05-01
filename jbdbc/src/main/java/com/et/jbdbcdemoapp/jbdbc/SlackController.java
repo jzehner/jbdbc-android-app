@@ -34,6 +34,8 @@ public class SlackController {
     private Exception exeption;
     public SlackUser myUser;
     public ArrayList<SlackUser> slackUsers;
+    public String channel = "C029CDNT4"; //#general
+    //public String channel = "C029CDNT8"; //#random
 
     public SlackController(){
         Log.i(TAG,"Getting Users list");
@@ -47,7 +49,7 @@ public class SlackController {
                     .authority("slack.com")
                     .path("api/chat.postMessage")
                     .appendQueryParameter("token", token)
-                    .appendQueryParameter("channel", "#general")
+                    .appendQueryParameter("channel", channel)
                     .appendQueryParameter("text", text)
                     .appendQueryParameter("username", username)
                     .build();
@@ -70,7 +72,7 @@ public class SlackController {
                     .authority("slack.com")
                     .path("api/channels.history")
                     .appendQueryParameter("token", token)
-                    .appendQueryParameter("channel","C029CDNT4")
+                    .appendQueryParameter("channel",channel)
                     .build();
 
             String data = new HttpTools.SendGetRequest().execute(uri.toString()).get();
@@ -154,12 +156,16 @@ public class SlackController {
                             slackMessage.username = message.getString("username");
                         }
                         String epochDate = message.getString("ts");
+                        if(message.has("subtype")){ slackMessage.subtype = message.getString("subtype"); }
                         slackMessage.epoch = epochDate;
                         if(epochDate.indexOf('.') != -1){
 
                             slackMessage.sent = new Date(Long.parseLong(epochDate.substring(0, epochDate.indexOf('.')))*1000);
                         }
-                        messageList.add(slackMessage);
+                        if(slackMessage.subtype != null && !slackMessage.subtype.equals("channel_join")){
+                            messageList.add(slackMessage);
+                        }
+
                     }
 
                 }

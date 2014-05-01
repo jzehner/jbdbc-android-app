@@ -12,6 +12,7 @@ public class SlackMessage {
     public String username;
     public Date sent;
     public String epoch;
+    public String subtype;
 
     public static Comparator<SlackMessage> COMPARE_BY_DATE = new Comparator<SlackMessage>() {
         public int compare(SlackMessage one, SlackMessage other) {

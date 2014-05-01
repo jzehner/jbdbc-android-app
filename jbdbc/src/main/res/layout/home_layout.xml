@@ -13,11 +13,4 @@
         android:layout_gravity="center_horizontal"
         android:paddingTop="20dp" />
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/editText"
-        android:layout_gravity="center_horizontal"
-        android:layout_margin="10dp" />
-
 </LinearLayout>

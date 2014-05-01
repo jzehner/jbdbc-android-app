@@ -189,7 +189,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                                 stopIBeaconSearch();
                                 new HttpTools.SendPostRequest().execute(
                                         "https://shielded-fortress-9160.herokuapp.com/fireEvent/beaconEntry",
-                                        "{\"email\": \"nkirkes@exacttarget.com\",\"slackId\": \"100\", \"honorsMember\": \"false\"}"
+                                        "{\"email\": \"nkirkes@exacttarget.com\",\"slackId\": \"100\", \"honorsMember\": \"true\"}"
                                 );
                                 runOnUiThread(new Runnable() {
                                     @Override

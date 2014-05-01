@@ -2,6 +2,7 @@ package com.et.jbdbcdemoapp.jbdbc;
 
 import android.app.Activity;
 import android.content.Context;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -105,6 +106,17 @@ public class ChatFragment extends Fragment {
                 }
 
             });
+            MediaPlayer mp = MediaPlayer.create(getActivity(), R.raw.journey);
+            mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+
+                    mp.release();
+                }
+
+            });
+            mp.start();
         }
 
     }

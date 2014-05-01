@@ -34,8 +34,10 @@ public class SlackController {
     private Exception exeption;
     public SlackUser myUser;
     public ArrayList<SlackUser> slackUsers;
-    public String channel = "C029CDNT4"; //#general
+    //public String channel = "C029CDNT4"; //#general
     //public String channel = "C029CDNT8"; //#random
+    public String channel = "C029GDVBC"; //#jbdbc
+    public Date chatMessageLimitDate;
 
     public SlackController(){
         Log.i(TAG,"Getting Users list");
@@ -67,13 +69,26 @@ public class SlackController {
         ArrayList<SlackMessage> returnList = new ArrayList<SlackMessage>();
         try{
             ArrayList<SlackMessage> messageList = new ArrayList<SlackMessage>();
-            Uri uri = new Uri.Builder()
-                    .scheme("https")
-                    .authority("slack.com")
-                    .path("api/channels.history")
-                    .appendQueryParameter("token", token)
-                    .appendQueryParameter("channel",channel)
-                    .build();
+            Uri uri = null;
+            if(chatMessageLimitDate == null){
+                uri = new Uri.Builder()
+                        .scheme("https")
+                        .authority("slack.com")
+                        .path("api/channels.history")
+                        .appendQueryParameter("token", token)
+                        .appendQueryParameter("channel", channel)
+                        .build();
+            }
+            else{
+                uri = new Uri.Builder()
+                        .scheme("https")
+                        .authority("slack.com")
+                        .path("api/channels.history")
+                        .appendQueryParameter("token", token)
+                        .appendQueryParameter("channel",channel)
+                        .appendQueryParameter("oldest",String.valueOf(chatMessageLimitDate.getTime()/1000))
+                        .build();
+            } 
 
             String data = new HttpTools.SendGetRequest().execute(uri.toString()).get();
             messageList = new ParseMessages().execute(data).get();
@@ -162,7 +177,7 @@ public class SlackController {
 
                             slackMessage.sent = new Date(Long.parseLong(epochDate.substring(0, epochDate.indexOf('.')))*1000);
                         }
-                        if(slackMessage.subtype != null && !slackMessage.subtype.equals("channel_join")){
+                        if(slackMessage.subtype != null && !slackMessage.subtype.equals("channel_join") || slackMessage.subtype == null){
                             messageList.add(slackMessage);
                         }
 

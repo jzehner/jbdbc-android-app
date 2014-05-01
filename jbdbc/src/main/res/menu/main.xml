@@ -11,4 +11,9 @@
         android:title="@string/action_beacon"
         android:orderInCategory="200"
         app:showAsAction="never" />
+    <item android:id="@+id/action_setmsgtime"
+        android:title="Set Chat Filter"
+        android:orderInCategory="300"
+        android:showAsAction="never"
+        />
 </menu>

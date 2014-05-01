@@ -23,6 +23,7 @@ import com.radiusnetworks.ibeacon.RangeNotifier;
 import com.radiusnetworks.ibeacon.Region;
 
 import java.util.Collection;
+import java.util.Date;
 
 public class MainActivity extends ActionBarActivity implements ActionBar.OnNavigationListener, IBeaconConsumer {
 
@@ -102,6 +103,9 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         }
         else if(id == R.id.action_beacon){
             startIBeaconSearch();
+        }
+        else if(id == R.id.action_setmsgtime){
+            slackController.chatMessageLimitDate = new Date();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -189,7 +193,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                                 stopIBeaconSearch();
                                 new HttpTools.SendPostRequest().execute(
                                         "https://shielded-fortress-9160.herokuapp.com/fireEvent/beaconEntry",
-                                        "{\"email\": \"nkirkes@exacttarget.com\",\"slackId\": \"100\", \"honorsMember\": \"true\"}"
+                                        "{\"email\": \"jzehner@exacttarget.com\",\"slackId\": \"100\", \"honorsMember\": \"false\"}"
                                 );
                                 runOnUiThread(new Runnable() {
                                     @Override

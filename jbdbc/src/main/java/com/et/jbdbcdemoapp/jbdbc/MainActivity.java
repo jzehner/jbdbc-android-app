@@ -1,10 +1,12 @@
 package com.et.jbdbcdemoapp.jbdbc;
 
 import android.content.Intent;
+import android.os.RemoteException;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -12,8 +14,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
-public class MainActivity extends ActionBarActivity implements ActionBar.OnNavigationListener {
+import com.radiusnetworks.ibeacon.IBeacon;
+import com.radiusnetworks.ibeacon.IBeaconConsumer;
+import com.radiusnetworks.ibeacon.IBeaconManager;
+import com.radiusnetworks.ibeacon.RangeNotifier;
+import com.radiusnetworks.ibeacon.Region;
+
+import java.util.Collection;
+
+public class MainActivity extends ActionBarActivity implements ActionBar.OnNavigationListener, IBeaconConsumer {
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -21,6 +32,13 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
      */
     private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
     private static final SlackController slackController = new SlackController();
+    protected static final String TAG = "JBDBC";
+    private IBeaconManager iBeaconManager = IBeaconManager.getInstanceForApplication(this);
+    private IBeacon triggerBeacon = new IBeacon("D57092AC-DFAA-446C-8EF3-C81AA22815B5",5,5000);
+    private boolean iBeaconHit = false;
+    private int iBeaconCurrentProximity = IBeacon.PROXIMITY_UNKNOWN;
+    private Region myRegion = new Region("myRangingUniqueId", null, null, null);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +61,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                                 getString(R.string.title_section3),
                         }),
                 this);
+
+        iBeaconManager.bind(this);
     }
 
     @Override
@@ -81,8 +101,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
             this.startActivity(in);
         }
         else if(id == R.id.action_beacon){
-            Intent intent = new Intent(this, MonitoringActivity.class);
-            this.startActivity(intent);
+            startIBeaconSearch();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -108,6 +127,12 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                 .replace(R.id.container, fragment)
                 .commit();
         return true;
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        iBeaconManager.unBind(this);
     }
 
     /**
@@ -147,7 +172,59 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
 
     }
 
+    @Override
+    public void onIBeaconServiceConnect() {
 
+
+        iBeaconManager.setRangeNotifier(new RangeNotifier() {
+            @Override
+            public void didRangeBeaconsInRegion(Collection<IBeacon> iBeacons, Region region) {
+                if(iBeacons.size() > 0){
+                    for(IBeacon beacon: iBeacons ){
+                        if(beacon.getProximityUuid().toLowerCase().equals(triggerBeacon.getProximityUuid().toLowerCase())
+                                && beacon.getMajor() == triggerBeacon.getMajor()
+                                && beacon.getMinor() == triggerBeacon.getMinor()){
+                            if(beacon.getProximity() < IBeacon.PROXIMITY_NEAR && !iBeaconHit){
+                                iBeaconHit = true;
+                                stopIBeaconSearch();
+                                new HttpTools.SendPostRequest().execute(
+                                        "https://shielded-fortress-9160.herokuapp.com/fireEvent/beaconEntry",
+                                        "{\"email\": \"nkirkes@exacttarget.com\",\"slackId\": \"100\", \"honorsMember\": \"false\"}"
+                                );
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast toast = Toast.makeText(getApplicationContext(), "iBeacon hit", Toast.LENGTH_SHORT);
+                                        toast.show();
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+    }
+
+    public void startIBeaconSearch(){
+        try {
+            iBeaconManager.startRangingBeaconsInRegion(myRegion);
+        }
+        catch (RemoteException e) {
+            Log.e(TAG, e.toString());
+        }
+    }
+
+    public void stopIBeaconSearch(){
+        try{
+            iBeaconManager.stopRangingBeaconsInRegion(myRegion);
+            iBeaconHit = false;
+        }
+        catch (RemoteException e){
+            Log.e(TAG, e.toString());
+        }
+    }
 
 
 }
